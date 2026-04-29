@@ -5,7 +5,9 @@ const fetch = require('node-fetch'); // 👈 importante si usas Node <18
 const app = express();
 app.use(express.json());
 app.use(express.static(__dirname));
-
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/g5_strategyai_landing.html');
+});
 app.post('/api/chat', async (req, res) => {
   try {
     const { system, messages } = req.body;
