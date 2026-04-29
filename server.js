@@ -56,9 +56,11 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-app.listen(5500, () => {
+const PORT = process.env.PORT || 5500;
+
+app.listen(PORT, () => {
   console.log('');
   console.log('✅ Servidor corriendo');
-  console.log('🌐 http://127.0.0.1:5500/g5_strategyai_landing.html');
+  console.log(`🌐 Puerto: ${PORT}`);
   console.log('');
 });
