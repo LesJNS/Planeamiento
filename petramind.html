@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PetraMind — El analista de datos que tu negocio necesita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f3ee;
+    --stone: #c8c2b4;
+    --ember: #e8461a;
+    --ember-pale: #fde8e2;
+    --sage: #2d4a3e;
+    --gold: #c9a84c;
+    --mist: #eceae4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--paper);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  .font-display { font-family: 'Syne', sans-serif; }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav { 
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    mix-blend-mode: normal;
+  }
+  .nav-inner {
+    margin: 16px 24px;
+    background: rgba(245,243,238,0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--stone);
+    border-radius: 100px;
+    padding: 12px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    color: var(--ink);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-logo .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--ember);
+    display: inline-block;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.7; }
+  }
+  .nav-links { display: flex; align-items: center; gap: 28px; }
+  .nav-links a { font-size: 14px; font-weight: 500; color: #555; text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--ink); }
+  .btn-nav {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 10px 22px;
+    border-radius: 100px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .btn-nav:hover { background: var(--ember); transform: scale(1.03); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 120px 5% 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .hero-bg-circle-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(232,70,26,0.12) 0%, transparent 70%);
+    top: -100px; right: -150px;
+    animation: float-1 8s ease-in-out infinite;
+  }
+  .hero-bg-circle-2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(45,74,62,0.10) 0%, transparent 70%);
+    bottom: 0; left: -100px;
+    animation: float-2 10s ease-in-out infinite;
+  }
+  @keyframes float-1 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-30px, 30px); }
+  }
+  @keyframes float-2 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(20px, -20px); }
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--mist);
+    border: 1px solid var(--stone);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 36px;
+    width: fit-content;
+    animation: fade-up 0.6s ease both;
+  }
+  .hero-eyebrow span.tag {
+    background: var(--ember);
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 100px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .hero-headline {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(44px, 7vw, 92px);
+    line-height: 0.95;
+    letter-spacing: -3px;
+    max-width: 900px;
+    animation: fade-up 0.7s 0.1s ease both;
+  }
+  .hero-headline .accent { color: var(--ember); }
+  .hero-headline .underline-accent {
+    position: relative;
+    display: inline-block;
+  }
+  .hero-headline .underline-accent::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: -4px; right: 0;
+    height: 4px;
+    background: var(--ember);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: underline-reveal 0.6s 0.9s ease forwards;
+  }
+  @keyframes underline-reveal { to { transform: scaleX(1); } }
+  .hero-sub {
+    margin-top: 28px;
+    font-size: clamp(16px, 2vw, 19px);
+    color: #555;
+    max-width: 540px;
+    line-height: 1.6;
+    font-weight: 300;
+    animation: fade-up 0.7s 0.25s ease both;
+  }
+  .hero-cta-row {
+    margin-top: 44px;
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+    animation: fade-up 0.7s 0.4s ease both;
+  }
+  .btn-primary {
+    background: var(--ember);
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 16px 36px;
+    border-radius: 100px;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(232,70,26,0.3);
+    letter-spacing: 0.2px;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(232,70,26,0.4); }
+  .btn-secondary {
+    color: var(--ink);
+    font-weight: 500;
+    font-size: 15px;
+    text-decoration: none;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--ink); }
+  .hero-trust {
+    margin-top: 60px;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    animation: fade-up 0.7s 0.55s ease both;
+  }
+  .trust-avatars { display: flex; }
+  .trust-avatars .av {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 2px solid var(--paper);
+    margin-left: -10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+  }
+  .trust-avatars .av:first-child { margin-left: 0; }
+  .trust-text { font-size: 14px; color: #666; }
+  .trust-text strong { color: var(--ink); font-weight: 600; }
+
+  /* STATS STRIP */
+  .stats-strip {
+    background: var(--ink);
+    padding: 28px 5%;
+    display: flex; justify-content: center;
+    gap: clamp(32px, 6vw, 80px);
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(26px, 4vw, 42px);
+    color: var(--paper);
+    letter-spacing: -1px;
+  }
+  .stat-num .stat-accent { color: var(--ember); }
+  .stat-label { font-size: 13px; color: var(--stone); margin-top: 4px; }
+
+  /* PROBLEM SECTION */
+  .section { padding: 100px 5%; }
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--stone);
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(32px, 4.5vw, 56px);
+    letter-spacing: -2px;
+    line-height: 1.05;
+    max-width: 640px;
+  }
+
+  .problem-grid {
+    margin-top: 60px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--stone);
+    border: 2px solid var(--stone);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .problem-card {
+    background: var(--paper);
+    padding: 40px 36px;
+    transition: background 0.2s;
+  }
+  .problem-card:hover { background: var(--mist); }
+  .problem-icon {
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+  .problem-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+  .problem-card p {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* HOW IT WORKS */
+  .how-bg {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 100px 5%;
+    position: relative;
+    overflow: hidden;
+  }
+  .how-bg::before {
+    content: '';
+    position: absolute;
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(232,70,26,0.08) 0%, transparent 60%);
+    top: -200px; right: -200px;
+    pointer-events: none;
+  }
+  .steps-flow {
+    margin-top: 70px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    position: relative;
+  }
+  .step-connector {
+    position: absolute;
+    top: 36px;
+    left: calc(12.5% + 20px);
+    right: calc(12.5% + 20px);
+    height: 1px;
+    background: linear-gradient(90deg, var(--ember) 0%, rgba(232,70,26,0.2) 100%);
+  }
+  .step-item { padding: 0 24px; text-align: center; }
+  .step-num {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--paper);
+    margin: 0 auto 28px;
+    position: relative;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(4px);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .step-item:hover .step-num {
+    border-color: var(--ember);
+    background: rgba(232,70,26,0.1);
+    color: var(--ember);
+  }
+  .step-item h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+  }
+  .step-item p {
+    font-size: 14px;
+    color: rgba(245,243,238,0.55);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* FEATURES */
+  .features-grid {
+    margin-top: 70px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .feat-card {
+    border: 1.5px solid var(--stone);
+    border-radius: 20px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    background: var(--paper);
+  }
+  .feat-card:hover { border-color: var(--ember); transform: translateY(-3px); }
+  .feat-card.big { grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+  .feat-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--ember-pale);
+    color: var(--ember);
+    font-size: 12px; font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.5px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  .feat-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: clamp(20px, 2.5vw, 26px);
+    letter-spacing: -0.8px;
+    margin-bottom: 14px;
+  }
+  .feat-card p {
+    font-size: 15px; color: #666; line-height: 1.65; font-weight: 300;
+  }
+  .feat-mockup {
+    background: var(--ink);
+    border-radius: 14px;
+    padding: 24px;
+    font-family: 'DM Sans', monospace;
+    font-size: 13px;
+  }
+  .mockup-bar {
+    display: flex; gap: 6px; margin-bottom: 18px;
+  }
+  .mockup-bar span {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .msg {
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 90%;
+  }
+  .msg.user {
+    background: rgba(255,255,255,0.08);
+    color: rgba(245,243,238,0.7);
+    margin-left: auto;
+    border-radius: 12px 12px 2px 12px;
+    text-align: right;
+  }
+  .msg.ai {
+    background: rgba(232,70,26,0.15);
+    color: var(--paper);
+    border-radius: 12px 12px 12px 2px;
+    border: 1px solid rgba(232,70,26,0.3);
+  }
+  .msg.ai strong { color: var(--ember); }
+
+  /* PERSONAS */
+  .personas-section { padding: 100px 5%; background: var(--mist); }
+  .personas-grid {
+    margin-top: 60px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .persona-card {
+    background: var(--paper);
+    border-radius: 20px;
+    padding: 36px;
+    border: 1.5px solid transparent;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .persona-card:hover { border-color: var(--ember); transform: translateY(-4px); }
+  .persona-avatar {
+    width: 54px; height: 54px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  .persona-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+  .persona-role {
+    font-size: 13px; color: #999; margin-bottom: 20px;
+  }
+  .persona-quote {
+    font-size: 14px;
+    line-height: 1.65;
+    color: #555;
+    font-style: italic;
+    font-weight: 300;
+    padding-left: 16px;
+    border-left: 3px solid var(--ember);
+    margin-bottom: 20px;
+  }
+  .persona-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag-pill {
+    font-size: 12px;
+    background: var(--mist);
+    border: 1px solid var(--stone);
+    border-radius: 100px;
+    padding: 4px 12px;
+    color: #555;
+  }
+
+  /* PRICING */
+  .pricing-section { padding: 100px 5%; }
+  .pricing-grid {
+    margin-top: 60px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .price-card {
+    border: 1.5px solid var(--stone);
+    border-radius: 20px;
+    padding: 40px 32px;
+    background: var(--paper);
+    transition: transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .price-card:hover { transform: translateY(-4px); }
+  .price-card.featured {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+  .price-card.featured .price-desc { color: rgba(245,243,238,0.55); }
+  .price-card.featured .price-feature { color: rgba(245,243,238,0.8); border-color: rgba(255,255,255,0.1); }
+  .featured-badge {
+    position: absolute; top: 20px; right: 20px;
+    background: var(--ember);
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+  .price-plan {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--stone);
+    margin-bottom: 16px;
+  }
+  .price-card.featured .price-plan { color: rgba(245,243,238,0.4); }
+  .price-amount {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 52px;
+    letter-spacing: -3px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .price-period { font-size: 14px; color: #999; margin-bottom: 20px; }
+  .price-card.featured .price-period { color: rgba(245,243,238,0.45); }
+  .price-desc {
+    font-size: 14px; color: #666; margin-bottom: 28px; line-height: 1.5; font-weight: 300;
+  }
+  .price-features { list-style: none; margin-bottom: 32px; }
+  .price-feature {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--mist);
+    font-size: 14px; color: #444;
+    font-weight: 400;
+  }
+  .price-feature .check { color: var(--ember); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .btn-price {
+    display: block; text-align: center;
+    padding: 14px;
+    border-radius: 100px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-price.outline {
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+  }
+  .btn-price.outline:hover { background: var(--ink); color: var(--paper); }
+  .btn-price.solid {
+    background: var(--ember);
+    color: white;
+    box-shadow: 0 4px 16px rgba(232,70,26,0.3);
+  }
+  .btn-price.solid:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(232,70,26,0.4); }
+  .btn-price.outline-white {
+    border: 1.5px solid rgba(255,255,255,0.3);
+    color: var(--paper);
+  }
+  .btn-price.outline-white:hover { background: rgba(255,255,255,0.08); }
+
+  /* AGENTS */
+  .agents-section { padding: 100px 5%; background: var(--ink); color: var(--paper); }
+  .agents-grid {
+    margin-top: 60px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .agent-card {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 32px 24px;
+    background: rgba(255,255,255,0.03);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .agent-card:hover { border-color: var(--ember); background: rgba(232,70,26,0.05); }
+  .agent-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: rgba(232,70,26,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 18px;
+    border: 1px solid rgba(232,70,26,0.2);
+  }
+  .agent-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+  .agent-card p {
+    font-size: 14px;
+    color: rgba(245,243,238,0.5);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+  .agent-output {
+    margin-top: 14px;
+    font-family: 'DM Sans', monospace;
+    font-size: 12px;
+    background: rgba(232,70,26,0.1);
+    border: 1px solid rgba(232,70,26,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--ember);
+  }
+
+  /* CTA SECTION */
+  .cta-section {
+    padding: 120px 5%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    width: 800px; height: 800px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(232,70,26,0.08) 0%, transparent 60%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .cta-section h2 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(36px, 5.5vw, 72px);
+    letter-spacing: -3px;
+    line-height: 0.97;
+    max-width: 760px;
+    margin: 0 auto 28px;
+  }
+  .cta-section p {
+    font-size: 18px; color: #666; max-width: 480px; margin: 0 auto 44px;
+    line-height: 1.6; font-weight: 300;
+  }
+  .cta-btns { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--stone);
+    padding: 40px 5%;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+    gap: 20px;
+  }
+  footer .foot-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--ink);
+  }
+  footer p { font-size: 13px; color: #999; }
+  footer nav a { font-size: 13px; color: #666; text-decoration: none; margin-left: 20px; }
+  footer nav a:hover { color: var(--ink); }
+
+  /* ANIMATIONS */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .problem-grid, .personas-grid, .pricing-grid, .agents-grid { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .feat-card.big { grid-column: span 1; grid-template-columns: 1fr; }
+    .steps-flow { grid-template-columns: 1fr 1fr; }
+    .step-connector { display: none; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <span class="dot"></span>
+      PetraMind
+    </div>
+    <div class="nav-links">
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#planes">Planes</a>
+      <a href="#agentes">Agentes IA</a>
+    </div>
+    <a href="#planes" class="btn-nav">Prueba gratis →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-circle hero-bg-circle-1"></div>
+  <div class="hero-bg-circle hero-bg-circle-2"></div>
+
+  <div class="hero-eyebrow">
+    <span class="tag">Nuevo</span>
+    Tu analista de datos con IA — sin necesitar expertos
+  </div>
+
+  <h1 class="hero-headline">
+    Deja de <span class="accent">adivinar</span>.<br>
+    Empieza a <span class="underline-accent">decidir</span>.
+  </h1>
+
+  <p class="hero-sub">
+    Conecta tus datos, pregunta en lenguaje natural y recibe recomendaciones claras, explicadas y accionables en minutos. Sin dashboards. Sin técnicos.
+  </p>
+
+  <div class="hero-cta-row">
+    <a href="#planes" class="btn-primary">Empieza gratis — 14 días</a>
+    <a href="#como-funciona" class="btn-secondary">
+      Ver cómo funciona
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+
+  <div class="hero-trust">
+    <div class="trust-avatars">
+      <div class="av" style="background:#e8461a;">M</div>
+      <div class="av" style="background:#2d4a3e;">D</div>
+      <div class="av" style="background:#c9a84c;">L</div>
+      <div class="av" style="background:#555;">R</div>
+    </div>
+    <p class="trust-text"><strong>+2,400 negocios</strong> ya toman mejores decisiones</p>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stat-item">
+    <div class="stat-num">5<span class="stat-accent">min</span></div>
+    <div class="stat-label">hasta tu primera recomendación</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">0</div>
+    <div class="stat-label">conocimientos técnicos requeridos</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">3<span class="stat-accent">x</span></div>
+    <div class="stat-label">más rápido que un analista humano</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">$15</div>
+    <div class="stat-label">precio de entrada al mes</div>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section class="section reveal">
+  <div class="section-label">El problema</div>
+  <h2 class="section-title">Tu negocio genera datos. Pero nadie los usa.</h2>
+
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="problem-icon">🎲</div>
+      <h3>Decisiones por intuición</h3>
+      <p>¿Qué producto conviene comprar más? ¿Cuándo bajar precios? Sin datos claros, todo es una apuesta.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">💸</div>
+      <h3>Sin equipo de datos</h3>
+      <p>Un analista cuesta entre $1,500 y $5,000/mes. Las PYMES no pueden permitírselo — hasta ahora.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">📊</div>
+      <h3>Herramientas imposibles</h3>
+      <p>Power BI, Tableau, Python. Excelentes para ingenieros. Inútiles para el dueño de una tienda con 3 empleados.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-bg" id="como-funciona">
+  <div class="section-label" style="color: rgba(200,194,180,0.6);">Cómo funciona</div>
+  <h2 class="section-title" style="color: var(--paper);">De datos crudos a decisiones claras en 4 pasos</h2>
+
+  <div class="steps-flow">
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-num">01</div>
+      <h3>Conecta</h3>
+      <p>Sube tu Excel, conecta tu POS, e-commerce o redes sociales. Sin configuración técnica.</p>
+    </div>
+    <div class="step-item">
+      <div class="step-num">02</div>
+      <h3>Pregunta</h3>
+      <p>"¿Qué producto me da más margen?" o "¿Cuándo vendo menos?" — en tu idioma.</p>
+    </div>
+    <div class="step-item">
+      <div class="step-num">03</div>
+      <h3>Recibe</h3>
+      <p>Recomendaciones claras, explicadas y verificables. Nunca una caja negra.</p>
+    </div>
+    <div class="step-item">
+      <div class="step-num">04</div>
+      <h3>Actúa</h3>
+      <p>Simula decisiones antes de tomarlas. Alertas automáticas para no perderte nada.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section reveal">
+  <div class="section-label">Funcionalidades</div>
+  <h2 class="section-title">Todo lo que necesitas, nada de lo que no.</h2>
+
+  <div class="features-grid">
+    <div class="feat-card big">
+      <div>
+        <div class="feat-chip">⭐ Core</div>
+        <h3>Pregunta como si hablaras con tu contador</h3>
+        <p>No más fórmulas ni tablas dinámicas. Escribe tu pregunta en español y PetraMind analiza todos tus datos para darte una respuesta accionable con el razonamiento detrás.</p>
+        <br>
+        <p style="font-size:13px; color:#999;">Compatible con: Excel · Google Sheets · Shopify · Mercado Libre · WhatsApp Business · más</p>
+      </div>
+      <div class="feat-mockup">
+        <div class="mockup-bar">
+          <span style="background:#ff5f57"></span>
+          <span style="background:#ffbd2e"></span>
+          <span style="background:#28ca41"></span>
+        </div>
+        <div class="msg user">¿Qué producto debo dejar de vender?</div>
+        <div class="msg ai">
+          <strong>📉 Recomendación clara:</strong><br>
+          "Zapatos Modelo B" genera solo S/320/mes con un margen de 8%. Ocupa 18% de tu inventario. <strong>Considera descontinuarlo</strong> o renegociar precio con el proveedor.
+        </div>
+        <div class="msg user">¿Y si subo precios en un 15%?</div>
+        <div class="msg ai">
+          <strong>📊 Simulación:</strong><br>
+          Con +15% en precio estimamos una caída del 22% en volumen. <strong>Resultado neto: +S/890/mes</strong>. Recomendamos probar en los próximos 30 días.
+        </div>
+      </div>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-chip">🔔 Alertas</div>
+      <h3>Tu negocio te habla solo</h3>
+      <p>PetraMind detecta anomalías automáticamente: caídas de ventas, stock crítico, productos que pierden margen. Sin que tengas que preguntar.</p>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-chip">📈 Simulación</div>
+      <h3>Decide antes de arriesgar</h3>
+      <p>¿Qué pasa si bajo precios un 10%? ¿Si abro los domingos? Simula escenarios reales con tus propios datos.</p>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-chip">📋 Reportes</div>
+      <h3>Reportes automáticos para tu equipo</h3>
+      <p>Cada semana, un resumen listo en PDF: qué pasó, por qué, y qué hacer. Perfecto para gerentes con múltiples locales.</p>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-chip">🔗 Integraciones</div>
+      <h3>Conecta todo lo que ya usas</h3>
+      <p>Excel, Google Sheets, Shopify, Mercado Libre, sistemas POS. Cero migración, cero fricción, cero código.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PERSONAS -->
+<section class="personas-section reveal">
+  <div class="section-label">Para quién es</div>
+  <h2 class="section-title">Diseñado para dueños reales, no para analistas.</h2>
+
+  <div class="personas-grid">
+    <div class="persona-card">
+      <div class="persona-avatar" style="background:#fde8e2;">👩‍🏪</div>
+      <h3>María</h3>
+      <div class="persona-role">Dueña de tienda retail</div>
+      <div class="persona-quote">"Necesito saber qué vender más sin perder tiempo en planillas."</div>
+      <div class="persona-tags">
+        <span class="tag-pill">Simplicidad</span>
+        <span class="tag-pill">Sin configuración</span>
+        <span class="tag-pill">Recomendaciones claras</span>
+      </div>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-avatar" style="background:#e8f0ed;">👨‍💻</div>
+      <h3>Diego</h3>
+      <div class="persona-role">E-commerce en crecimiento</div>
+      <div class="persona-quote">"Quiero predicciones de demanda reales, no promedios genéricos."</div>
+      <div class="persona-tags">
+        <span class="tag-pill">Predicciones</span>
+        <span class="tag-pill">Automatización</span>
+        <span class="tag-pill">Integraciones API</span>
+      </div>
+    </div>
+
+    <div class="persona-card">
+      <div class="persona-avatar" style="background:#fef9ec;">👔</div>
+      <h3>Luis</h3>
+      <div class="persona-role">Gerente de múltiples locales</div>
+      <div class="persona-quote">"Necesito comparar mis sucursales en un solo lugar, sin depender de mi equipo."</div>
+      <div class="persona-tags">
+        <span class="tag-pill">Reportes automáticos</span>
+        <span class="tag-pill">Multi-local</span>
+        <span class="tag-pill">Explicabilidad</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENTS -->
+<section class="agents-section reveal" id="agentes">
+  <div class="section-label" style="color: rgba(200,194,180,0.5);">Los 4 agentes IA</div>
+  <h2 class="section-title" style="color: var(--paper); max-width:600px;">No es software. Es un equipo que trabaja para tu negocio.</h2>
+
+  <div class="agents-grid">
+    <div class="agent-card">
+      <div class="agent-icon">🧠</div>
+      <h3>Estratega</h3>
+      <p>Analiza tus datos, detecta oportunidades y genera recomendaciones con razonamiento claro.</p>
+      <div class="agent-output">→ "Sube precios en Cat. A"<br>→ "Compra más stock de X"</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">📢</div>
+      <h3>Marketer</h3>
+      <p>Convierte los insights en campañas, copies y promociones listas para ejecutar.</p>
+      <div class="agent-output">→ "Campaña IG para producto<br>&nbsp;&nbsp;&nbsp;con alta demanda esta semana"</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">⚙️</div>
+      <h3>Developer</h3>
+      <p>Integra sistemas, automatiza procesos y configura alertas sin que escribas una línea de código.</p>
+      <div class="agent-output">→ Alerta: stock bajo en 3 días<br>→ Sync automático con POS</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">🤝</div>
+      <h3>Soporte</h3>
+      <p>Explica cada recomendación en lenguaje simple. Siempre disponible, siempre paciente.</p>
+      <div class="agent-output">→ "¿Por qué me dice esto?"<br>→ Explicación en 2 líneas</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section reveal" id="planes">
+  <div class="section-label">Planes</div>
+  <h2 class="section-title">Empieza gratis. Paga cuando veas el valor.</h2>
+
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-plan">Starter</div>
+      <div class="price-amount">$15</div>
+      <div class="price-period">/ mes · facturación mensual</div>
+      <div class="price-desc">Para negocios que recién empiezan a usar datos para decidir.</div>
+      <ul class="price-features">
+        <li class="price-feature"><span class="check">✦</span> 1 fuente de datos (Excel o Sheets)</li>
+        <li class="price-feature"><span class="check">✦</span> 50 preguntas en lenguaje natural/mes</li>
+        <li class="price-feature"><span class="check">✦</span> Agente Estratega</li>
+        <li class="price-feature"><span class="check">✦</span> Reportes semanales PDF</li>
+        <li class="price-feature"><span class="check">✦</span> Soporte por chat</li>
+      </ul>
+      <a href="#" class="btn-price outline">Empezar — 14 días gratis</a>
+    </div>
+
+    <div class="price-card featured">
+      <div class="featured-badge">Más popular</div>
+      <div class="price-plan">Growth</div>
+      <div class="price-amount">$49</div>
+      <div class="price-period">/ mes · facturación mensual</div>
+      <div class="price-desc">Para negocios que quieren automatizar sus decisiones y crecer.</div>
+      <ul class="price-features">
+        <li class="price-feature"><span class="check">✦</span> Hasta 5 fuentes conectadas</li>
+        <li class="price-feature"><span class="check">✦</span> Preguntas ilimitadas</li>
+        <li class="price-feature"><span class="check">✦</span> 4 agentes IA completos</li>
+        <li class="price-feature"><span class="check">✦</span> Alertas automáticas</li>
+        <li class="price-feature"><span class="check">✦</span> Simulador de decisiones</li>
+        <li class="price-feature"><span class="check">✦</span> Integraciones POS y e-commerce</li>
+      </ul>
+      <a href="#" class="btn-price solid">Empezar — 14 días gratis</a>
+    </div>
+
+    <div class="price-card">
+      <div class="price-plan">Pro</div>
+      <div class="price-amount">$99</div>
+      <div class="price-period">/ mes · facturación mensual</div>
+      <div class="price-desc">Para gerentes y negocios con múltiples locales o alto volumen.</div>
+      <ul class="price-features">
+        <li class="price-feature"><span class="check">✦</span> Fuentes ilimitadas</li>
+        <li class="price-feature"><span class="check">✦</span> Multi-local con comparativas</li>
+        <li class="price-feature"><span class="check">✦</span> API access</li>
+        <li class="price-feature"><span class="check">✦</span> Reportes personalizados</li>
+        <li class="price-feature"><span class="check">✦</span> Onboarding dedicado</li>
+        <li class="price-feature"><span class="check">✦</span> SLA garantizado</li>
+      </ul>
+      <a href="#" class="btn-price outline">Hablar con ventas →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <h2>Deja de perder dinero<br>por no entender tus datos.</h2>
+  <p>Empieza gratis hoy. Sin tarjeta. Sin técnicos. Tu primer insight en menos de 5 minutos.</p>
+  <div class="cta-btns">
+    <a href="#planes" class="btn-primary" style="font-size:16px; padding:18px 44px;">Empezar gratis — 14 días</a>
+    <a href="#como-funciona" class="btn-secondary" style="font-size:15px;">
+      Ver demo
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">⬡ PetraMind</div>
+  <p>© 2025 PetraMind. Hecho para las PYMES de Latinoamérica.</p>
+  <nav>
+    <a href="#">Privacidad</a>
+    <a href="#">Términos</a>
+    <a href="#">Contacto</a>
+  </nav>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Animate stat numbers
+  function animateCount(el, target, duration = 1400) {
+    const start = performance.now();
+    const isFloat = target % 1 !== 0;
+    const update = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = eased * target;
+      el.textContent = isFloat ? value.toFixed(0) : Math.round(value);
+      if (progress < 1) requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
+  }
+
+  // Cursor glow on hero
+  const hero = document.querySelector('.hero');
+  hero.addEventListener('mousemove', (e) => {
+    const rect = hero.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    hero.style.setProperty('--mx', x + 'px');
+    hero.style.setProperty('--my', y + 'px');
+  });
+</script>
+</body>
+</html>
