@@ -1,68 +1,54 @@
-require('dotenv').config();
-const express = require('express');
-const fetch = require('node-fetch'); // 👈 importante si usas Node <18
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import OpenAI from "openai";
+
+dotenv.config();
 
 const app = express();
+app.use(cors());
 app.use(express.json());
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use(express.static(__dirname));
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/g5_strategyai_landing.html');
+
+// Servir landing en la raíz
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "g5_strategyai_landing.html"));
 });
-app.post('/api/chat', async (req, res) => {
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+app.post("/api", async (req, res) => {
   try {
-    const { system, messages } = req.body;
+    const { mensaje, empresa, framework } = req.body;
 
-    const userText = messages?.[0]?.content || '';
-    const fullPrompt = system ? system + '\n\n' + userText : userText;
-
-    const GEMINI_KEY = process.env.GEMINI_API_KEY;
-
-    if (!GEMINI_KEY) {
-      return res.status(500).json({ error: "API KEY no definida" });
-    }
-
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: fullPrompt }]
-          }
-        ],
-        generationConfig: {
-          maxOutputTokens: 1000,
-          temperature: 0.7
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "user",
+          content: `Eres un consultor estratégico. Empresa: ${empresa}, Framework: ${framework}. Pregunta: ${mensaje}`
         }
-      })
+      ]
     });
-
-    const data = await response.json();
-
-    console.log("Respuesta Gemini:", data); // 👈 debug útil
-
-    const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      data?.error?.message ||
-      'Sin respuesta.';
 
     res.json({
-      content: [{ type: 'text', text }]
+      respuesta: response.choices[0].message.content
     });
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error con IA");
   }
 });
 
-const PORT = process.env.PORT || 5500;
-
-app.listen(PORT, () => {
-  console.log('');
-  console.log('✅ Servidor corriendo');
-  console.log(`🌐 Puerto: ${PORT}`);
-  console.log('');
+app.listen(5500, () => {
+  console.log("Servidor corriendo en http://localhost:5500");
 });

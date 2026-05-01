@@ -334,7 +334,7 @@
       </div>
       <div class="demo-input-row">
         <textarea id="d-input" placeholder="Describe tu empresa o haz una pregunta estratégica..." rows="1" onkeydown="demoKey(event)" oninput="demoResize(this)"></textarea>
-        <button class="demo-send" id="d-send" onclick="demoSend()">
+        <button class="demo-send" id="d-send" onclick="enviarMensaje()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
       </div>
@@ -378,19 +378,10 @@
   let currentFW = 'foda';
   let isLoading = false;
 
-  const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_API_KEY;
 
   const fwLabels = {
     foda: 'FODA', porter: '5 Fuerzas de Porter', okr: 'OKRs Estratégicos',
     bmc: 'Business Model Canvas', pestel: 'PESTEL'
-  };
-
-  const fwPrompts = {
-    foda: 'Eres un consultor estratégico senior de una firma de élite. Realiza un análisis FODA completo y ejecutivo para la empresa descrita. Estructura con las 4 categorías (Fortalezas, Oportunidades, Debilidades, Amenazas) con 3-4 bullets accionables cada una. Cierra con una síntesis estratégica de 2-3 líneas. Responde en español, formato claro y conciso.',
-    porter: 'Eres un consultor experto en análisis competitivo. Aplica las 5 Fuerzas de Porter para la empresa. Analiza cada fuerza con nivel de intensidad (Alta/Media/Baja) y justificación breve. Concluye con el atractivo general del sector. Responde en español, formato ejecutivo.',
-    okr: 'Eres un consultor experto en planificación estratégica con OKRs. Define 3 Objetivos estratégicos principales con 3 Key Results medibles cada uno para la empresa descrita. Incluye métricas concretas y horizonte anual. Responde en español, formato conciso.',
-    bmc: 'Eres un experto en modelo de negocios. Completa el Business Model Canvas para la empresa: propuesta de valor, segmentos, canales, relaciones, ingresos, recursos clave, actividades clave, socios y costos. Identifica 1-2 gaps críticos. Responde en español, formato ejecutivo.',
-    pestel: 'Eres un consultor en análisis del entorno empresarial. Realiza un análisis PESTEL completo (Político, Económico, Social, Tecnológico, Ecológico, Legal) para la empresa en el contexto peruano y latinoamericano. Identifica las 3 implicaciones estratégicas más importantes. Responde en español.'
   };
 
   function setFW(btn, fw) {
@@ -417,7 +408,7 @@
     if (role === 'assistant') {
       var lbl = document.createElement('div');
       lbl.className = 'bub-label';
-      lbl.textContent = 'Gemini · ' + fwLabels[currentFW];
+      lbl.textContent = 'OpenAI · ' + fwLabels[currentFW];
       bub.appendChild(lbl);
     }
     var txt = document.createElement('div');
@@ -531,6 +522,49 @@
     document.getElementById('d-input').value = d.msg;
     demoSend();
   }
+</script>
+<script>
+async function enviarMensaje() {
+  if (isLoading) return;
+  var inp = document.getElementById('d-input');
+  var company = document.getElementById('d-company').value || 'empresa';
+  var sector = document.getElementById('d-sector').value;
+  var size = document.getElementById('d-size').value;
+  var text = inp.value.trim();
+  if (!text) return;
+
+  inp.value = '';
+  inp.style.height = 'auto';
+  isLoading = true;
+  document.getElementById('d-send').disabled = true;
+
+  appendMsg('user', text);
+  var typingEl = appendTyping();
+
+  try {
+    const res = await fetch("/api", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        mensaje: text,
+        empresa: company,
+        framework: fwLabels[currentFW]
+      })
+    });
+    const data = await res.json();
+    typingEl.remove();
+    appendMsg('assistant', data.respuesta);
+  } catch (err) {
+    typingEl.remove();
+    appendMsg('assistant', 'Error de conexión: ' + err.message);
+  }
+
+  isLoading = false;
+  document.getElementById('d-send').disabled = false;
+  document.getElementById('d-chat').scrollTop = 99999;
+}
 </script>
 </body>
 </html>
