@@ -448,54 +448,10 @@
     return wrap;
   }
 
-  async function demoSend() {
-    if (isLoading) return;
-    var inp = document.getElementById('d-input');
-    var company = document.getElementById('d-company').value || 'empresa';
-    var sector = document.getElementById('d-sector').value;
-    var size = document.getElementById('d-size').value;
-    var text = inp.value.trim();
-    if (!text) return;
 
-    inp.value = '';
-    inp.style.height = 'auto';
-    isLoading = true;
-    document.getElementById('d-send').disabled = true;
-
-    appendMsg('user', text);
-    var typingEl = appendTyping();
-
-    var fullPrompt = fwPrompts[currentFW] + '\n\nEmpresa: ' + company + '\nSector: ' + sector + '\nTamaño: ' + size + '\n\nConsulta estratégica: ' + text;
-
-    try {
-      var res = await fetch(GEMINI_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: fullPrompt }] }],
-          generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
-        })
-      });
-      var data = await res.json();
-      typingEl.remove();
-      if (data.error) {
-        appendMsg('assistant', 'Error de API: ' + data.error.message);
-      } else {
-        var reply = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) ? data.candidates[0].content.parts[0].text : 'Sin respuesta.';
-        appendMsg('assistant', reply);
-      }
-    } catch (err) {
-      typingEl.remove();
-      appendMsg('assistant', 'Error de conexión: ' + err.message);
-    }
-
-    isLoading = false;
-    document.getElementById('d-send').disabled = false;
-    document.getElementById('d-chat').scrollTop = 99999;
-  }
 
   function demoKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); demoSend(); }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensaje(); }
   }
 
   function demoResize(el) {
@@ -505,7 +461,7 @@
 
   function useChip(text) {
     document.getElementById('d-input').value = text;
-    demoSend();
+    enviarMensaje();
   }
 
   var demos = {
@@ -520,7 +476,7 @@
     document.getElementById('d-sector').value = d.sector;
     document.getElementById('d-size').value = d.size;
     document.getElementById('d-input').value = d.msg;
-    demoSend();
+    enviarMensaje();
   }
 </script>
 <script>
