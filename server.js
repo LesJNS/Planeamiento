@@ -420,6 +420,56 @@ Responde ÚNICAMENTE con un JSON válido.`;
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  SIMULACIÓN WHAT-IF
+// ═══════════════════════════════════════════════════════════════════════════
+app.post("/api/whatif", async (req, res) => {
+  try {
+    const { pregunta, contexto = {} } = req.body;
+    if (!pregunta) return res.status(400).json({ error: "Pregunta requerida" });
+
+    const ctxStr = [
+      contexto.ventas_totales ? `Ventas totales: ${contexto.ventas_totales}` : '',
+      contexto.morosidad      ? `Morosidad promedio: ${contexto.morosidad}` : '',
+      contexto.clientes       ? `Clientes totales: ${contexto.clientes}` : '',
+      contexto.registros      ? `Registros analizados: ${contexto.registros}` : '',
+      contexto.prediccion     ? `Predicción próximo mes: ${contexto.prediccion.mes_siguiente} (${contexto.prediccion.tendencia})` : ''
+    ].filter(Boolean).join('\n');
+
+    const prompt = `Eres un consultor estratégico senior con experiencia en simulaciones financieras.
+
+Datos actuales del negocio:
+${ctxStr || '(Sin datos de contexto disponibles)'}
+
+El usuario pregunta: "${pregunta}"
+
+Responde con un análisis what-if conciso y accionable. Devuelve ÚNICAMENTE este JSON válido:
+{
+  "impacto_estimado": "descripción breve del impacto en ventas/ingresos (1-2 oraciones con cifras estimadas si es posible)",
+  "impacto_tipo": "positivo|negativo|neutro",
+  "riesgo_nivel": "alto|medio|bajo",
+  "riesgo_descripcion": "descripción del riesgo principal (1 oración)",
+  "puntos_clave": ["punto 1", "punto 2", "punto 3"]
+}`;
+
+    const aiRes = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: "Eres un consultor estratégico experto en simulaciones what-if. Devuelves análisis concisos, realistas y basados en datos. Solo JSON válido." },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: 400
+    });
+
+    const result = JSON.parse(aiRes.choices[0].message.content);
+    res.json(result);
+  } catch (err) {
+    console.error("❌ Error en /api/whatif:", err.message);
+    res.status(500).json({ error: "Error al calcular simulación" });
+  }
+});
+
 function formatNumber(n) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;

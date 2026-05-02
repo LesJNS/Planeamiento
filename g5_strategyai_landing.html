@@ -319,6 +319,41 @@
   .btn-export.excel:hover { border-color: #1e7e47; color: #1e7e47; background: rgba(30,126,71,0.06); }
   /* ===== CENTRADO TOTAL: TITULO + GRAFICO ===== */
 
+  /* ===== WHAT-IF ===== */
+  .whatif-card { background: var(--ink); color: var(--paper); border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; }
+  .whatif-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.4px; margin-bottom: 5px; }
+  .whatif-subtitle { font-size: 13px; color: rgba(245,243,238,0.4); margin-bottom: 20px; }
+  .whatif-input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .whatif-input { flex: 1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 100px; padding: 12px 20px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--paper); outline: none; transition: border-color 0.2s; }
+  .whatif-input::placeholder { color: rgba(245,243,238,0.3); }
+  .whatif-input:focus { border-color: var(--ember); }
+  .whatif-btn { background: var(--ember); color: white; border: none; border-radius: 100px; padding: 12px 24px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; transition: opacity 0.2s, transform 0.15s; }
+  .whatif-btn:hover:not(:disabled) { opacity: 0.88; transform: scale(1.03); }
+  .whatif-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .whatif-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .whatif-chip { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.11); border-radius: 100px; padding: 6px 14px; font-size: 12px; color: rgba(245,243,238,0.55); cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s; }
+  .whatif-chip:hover { background: rgba(232,70,26,0.15); border-color: rgba(232,70,26,0.5); color: var(--paper); }
+  .whatif-loading { display: none; font-size: 13px; color: rgba(245,243,238,0.4); padding: 20px 0 4px; text-align: center; }
+  .whatif-loading.show { display: block; }
+  .whatif-result { display: none; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 22px; margin-top: 18px; }
+  .whatif-result.show { display: block; }
+  .whatif-result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  @media (max-width: 600px) { .whatif-result-grid { grid-template-columns: 1fr; } }
+  .wi-metric { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px 18px; }
+  .wi-metric-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(245,243,238,0.3); margin-bottom: 10px; }
+  .wi-metric-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; line-height: 1.4; margin-bottom: 8px; }
+  .wi-badge { display: inline-block; padding: 3px 11px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Syne', sans-serif; }
+  .wi-badge.positivo { background: rgba(45,74,62,0.45); color: #7ed4a6; }
+  .wi-badge.negativo { background: rgba(232,70,26,0.2); color: #f4a58a; }
+  .wi-badge.neutro { background: rgba(255,255,255,0.1); color: rgba(245,243,238,0.55); }
+  .wi-badge.alto { background: rgba(232,70,26,0.2); color: #f4a58a; }
+  .wi-badge.medio { background: rgba(201,168,76,0.18); color: #e8c97a; }
+  .wi-badge.bajo { background: rgba(45,74,62,0.35); color: #7ed4a6; }
+  .wi-puntos-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(245,243,238,0.3); margin-bottom: 12px; }
+  .wi-puntos { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .wi-puntos li { font-size: 13px; color: rgba(245,243,238,0.65); padding-left: 18px; position: relative; line-height: 1.55; }
+  .wi-puntos li::before { content: '→'; position: absolute; left: 0; color: var(--ember); font-weight: 700; }
+
 </style>
 </head>
 <body>
@@ -526,6 +561,38 @@
     </div>
 
     <div class="risks-row" id="risks-row"></div>
+
+    <div class="whatif-card" id="whatif-card">
+      <div class="whatif-title">Simulación What-if ✦</div>
+      <div class="whatif-subtitle">Pregunta qué pasaría con tus métricas ante un cambio estratégico</div>
+      <div class="whatif-input-row">
+        <input class="whatif-input" id="whatif-input" type="text" placeholder="¿Qué pasa si subo los precios 5%?" />
+        <button class="whatif-btn" id="whatif-btn" onclick="runWhatif()">Simular →</button>
+      </div>
+      <div class="whatif-chips">
+        <span class="whatif-chip" onclick="setWhatif('¿Qué pasa si subo precios 5%?')">Subir precios 5%</span>
+        <span class="whatif-chip" onclick="setWhatif('¿Qué pasa si reduzco costos operativos 10%?')">Reducir costos 10%</span>
+        <span class="whatif-chip" onclick="setWhatif('¿Qué pasa si pierdo el 15% de mis clientes?')">Perder 15% clientes</span>
+        <span class="whatif-chip" onclick="setWhatif('¿Qué impacto tiene lanzar un nuevo producto?')">Nuevo producto</span>
+      </div>
+      <div class="whatif-loading" id="whatif-loading">⏳ Calculando simulación...</div>
+      <div class="whatif-result" id="whatif-result">
+        <div class="whatif-result-grid">
+          <div class="wi-metric">
+            <div class="wi-metric-label">Impacto estimado</div>
+            <div class="wi-metric-value" id="wi-impacto">—</div>
+            <div id="wi-impacto-badge"></div>
+          </div>
+          <div class="wi-metric">
+            <div class="wi-metric-label">Nivel de riesgo</div>
+            <div id="wi-riesgo-badge"></div>
+            <div style="margin-top:10px;font-size:12px;color:rgba(245,243,238,0.45);line-height:1.5" id="wi-riesgo-desc"></div>
+          </div>
+        </div>
+        <div class="wi-puntos-label">Puntos clave</div>
+        <ul class="wi-puntos" id="wi-puntos"></ul>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -953,10 +1020,61 @@
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  function setWhatif(q) {
+    document.getElementById('whatif-input').value = q;
+    document.getElementById('whatif-input').focus();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const wi = document.getElementById('whatif-input');
+    if (wi) wi.addEventListener('keydown', e => { if (e.key === 'Enter') runWhatif(); });
+  });
+
+  async function runWhatif() {
+    const pregunta = document.getElementById('whatif-input').value.trim();
+    if (!pregunta) return;
+    const btn = document.getElementById('whatif-btn');
+    btn.disabled = true;
+    document.getElementById('whatif-loading').classList.add('show');
+    document.getElementById('whatif-result').classList.remove('show');
+
+    const ctx = lastAnalysis ? {
+      ventas_totales: (lastAnalysis.kpis || []).find(k => k.nombre === 'Ventas totales')?.valor || '',
+      morosidad: (lastAnalysis.kpis || []).find(k => k.nombre === 'Morosidad promedio')?.valor || '',
+      clientes: (lastAnalysis.kpis || []).find(k => k.nombre === 'Clientes totales')?.valor || '',
+      registros: (lastAnalysis.kpis || []).find(k => k.nombre === 'Registros analizados')?.valor || '',
+      prediccion: lastAnalysis.prediccion || null
+    } : {};
+
+    try {
+      const res = await fetch('/api/whatif', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pregunta, contexto: ctx })
+      });
+      const d = await res.json();
+      if (d.error) throw new Error(d.error);
+
+      document.getElementById('wi-impacto').textContent = d.impacto_estimado;
+      document.getElementById('wi-impacto-badge').innerHTML = `<span class="wi-badge ${d.impacto_tipo}">${d.impacto_tipo}</span>`;
+      document.getElementById('wi-riesgo-badge').innerHTML = `<span class="wi-badge ${d.riesgo_nivel}">Riesgo ${d.riesgo_nivel}</span>`;
+      document.getElementById('wi-riesgo-desc').textContent = d.riesgo_descripcion;
+      document.getElementById('wi-puntos').innerHTML = (d.puntos_clave || []).map(p => `<li>${escHtml(p)}</li>`).join('');
+      document.getElementById('whatif-result').classList.add('show');
+    } catch(err) {
+      alert('Error en simulación: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      document.getElementById('whatif-loading').classList.remove('show');
+    }
+  }
+
   window.analyzeCSV = analyzeCSV;
   window.resetDashboard = resetDashboard;
   window.exportCSV = exportCSV;
   window.exportExcel = exportExcel;
+  window.runWhatif = runWhatif;
+  window.setWhatif = setWhatif;
 </script>
 </body>
 </html>
