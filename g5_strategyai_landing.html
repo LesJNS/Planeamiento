@@ -7,7 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
 <style>
+  /* ========== ESTILOS COMPLETOS (mismo CSS que antes) ========== */
   :root {
     --ink: #0a0a0f;
     --paper: #f5f3ee;
@@ -107,7 +111,6 @@
   .persona-quote { font-size: 14px; line-height: 1.65; color: #555; font-style: italic; font-weight: 300; padding-left: 16px; border-left: 3px solid var(--ember); margin-bottom: 20px; }
   .persona-tags { display: flex; flex-wrap: wrap; gap: 6px; }
   .tag-pill { font-size: 12px; background: var(--mist); border: 1px solid var(--stone); border-radius: 100px; padding: 4px 12px; color: #555; }
-  /* DEMO */
   .demo-section { padding: 100px 5%; background: var(--ink); color: var(--paper); position: relative; overflow: hidden; }
   .demo-section::before { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(232,70,26,0.10) 0%, transparent 65%); bottom: -200px; left: -100px; pointer-events: none; }
   .demo-section::after { content: ''; position: absolute; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 65%); top: -100px; right: 10%; pointer-events: none; }
@@ -203,6 +206,119 @@
   .footer-links a { font-size: 13px; color: #888; text-decoration: none; }
   .footer-links a:hover { color: var(--ink); }
   .footer-copy { font-size: 13px; color: #aaa; }
+
+  /* CSV DASHBOARD */
+  .csv-section { padding: 100px 5%; background: var(--mist); }
+  .csv-section .section-title { max-width: 720px; }
+  .drop-zone { border: 2px dashed var(--stone); border-radius: 20px; padding: 56px 40px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--paper); position: relative; }
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--ember); background: var(--ember-pale); }
+  .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .drop-icon { font-size: 44px; margin-bottom: 16px; }
+  .drop-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .drop-sub { font-size: 14px; color: #888; margin-bottom: 20px; }
+  .drop-hint { font-size: 12px; color: #bbb; }
+  .btn-upload { display: inline-block; background: var(--ink); color: var(--paper); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; padding: 11px 28px; border-radius: 100px; border: none; cursor: pointer; transition: background 0.2s; }
+  .btn-upload:hover { background: var(--ember); }
+  .file-selected-bar { display: none; align-items: center; gap: 12px; background: var(--paper); border: 1px solid var(--stone); border-radius: 12px; padding: 14px 20px; margin-top: 16px; }
+  .file-selected-bar.show { display: flex; }
+  .file-icon { font-size: 24px; }
+  .file-info { flex: 1; }
+  .file-name { font-weight: 600; font-size: 14px; }
+  .file-size { font-size: 12px; color: #888; }
+  .btn-analyze { background: var(--ember); color: white; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; padding: 12px 28px; border-radius: 100px; border: none; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 16px rgba(232,70,26,0.3); }
+  .btn-analyze:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(232,70,26,0.4); }
+  .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .context-input { width: 100%; margin-top: 12px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--stone); font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--paper); color: var(--ink); outline: none; }
+  .context-input:focus { border-color: var(--ember); }
+  .analysis-loading { display: none; text-align: center; padding: 60px 0; }
+  .analysis-loading.show { display: block; }
+  .loader-ring { width: 56px; height: 56px; border: 3px solid var(--stone); border-top-color: var(--ember); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-steps { display: flex; flex-direction: column; gap: 6px; align-items: center; font-size: 13px; color: #888; }
+  .dashboard-output { display: none; }
+  .dashboard-output.show { display: block; }
+  .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 12px; }
+  .dash-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.5px; }
+  .dash-badge { background: rgba(45,74,62,0.12); color: var(--sage); border: 1px solid rgba(45,74,62,0.2); border-radius: 100px; padding: 4px 14px; font-size: 12px; font-weight: 600; font-family: 'Syne', sans-serif; }
+  .btn-reset { background: transparent; border: 1.5px solid var(--stone); border-radius: 100px; padding: 8px 18px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; color: #666; transition: all 0.2s; }
+  .btn-reset:hover { border-color: var(--ember); color: var(--ember); }
+  .exec-summary { background: var(--ink); color: var(--paper); border-radius: 16px; padding: 28px 32px; margin-bottom: 28px; position: relative; overflow: hidden; }
+  .exec-summary::before { content: ''; position: absolute; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(232,70,26,0.15) 0%, transparent 70%); top: -100px; right: -80px; pointer-events: none; }
+  .exec-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--ember); font-weight: 700; font-family: 'Syne', sans-serif; margin-bottom: 12px; }
+  .exec-text { font-size: 15px; line-height: 1.7; color: rgba(245,243,238,0.85); max-width: 780px; font-weight: 300; position: relative; z-index: 1; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .kpi-card { border-radius: 16px; padding: 22px 20px; transition: transform 0.18s; cursor: default; position: relative; overflow: hidden; }
+  .kpi-card:hover { transform: translateY(-3px); }
+  .kpi-card.kc-alto { background: var(--ink); color: var(--paper); }
+  .kpi-card.kc-alto::after { content:''; position:absolute; width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(232,70,26,0.25) 0%,transparent 70%);top:-30px;right:-20px;pointer-events:none; }
+  .kpi-card.kc-rate { background: linear-gradient(135deg, #e8461a 0%, #c23510 100%); color: white; }
+  .kpi-card.kc-medio { background: var(--paper); border: 1.5px solid var(--stone); color: var(--ink); }
+  .kpi-card.kc-bajo { background: var(--mist); border: 1.5px solid var(--stone); color: #666; }
+  .kpi-label { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
+  .kc-alto .kpi-label, .kc-rate .kpi-label { color: rgba(255,255,255,0.55); }
+  .kc-medio .kpi-label { color: #aaa; }
+  .kc-bajo .kpi-label  { color: #bbb; }
+  .kpi-value { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1.5px; line-height: 1; margin-bottom: 6px; }
+  .kpi-growth-row { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+  .kpi-growth-val { font-weight: 600; }
+  .charts-section { margin-bottom: 24px; }
+  .charts-row { display: grid; gap: 16px; margin-bottom: 16px; }
+  .charts-row.r-1  { grid-template-columns: 1fr; }
+  .charts-row.r-2  { grid-template-columns: 3fr 2fr; }
+  .charts-row.r-2b { grid-template-columns: 2fr 1fr; }
+  @media (max-width: 860px) { .charts-row.r-2,.charts-row.r-2b { grid-template-columns:1fr; } }
+  .chart-card { background: var(--paper); border: 1.5px solid var(--stone); border-radius: 16px; padding: 22px 24px; }
+  .chart-header { text-align: center; margin-bottom: 16px; }
+  .chart-hd-left .chart-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -0.3px; }
+  .chart-hd-left .chart-desc  { font-size: 12px; color: #999; margin-top: 3px; }
+  .chart-type-badge { font-size: 10px; background: var(--mist); border: 1px solid var(--stone); border-radius: 100px; padding: 3px 10px; color: #888; font-weight: 600; font-family: 'Syne', sans-serif; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-top: 6px; }
+  .chart-canvas-wrap { position: relative; }
+  .cc-mid  { height: 280px; }
+  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media (max-width: 960px) { .bottom-grid { grid-template-columns: 1fr; } }
+  .insight-card, .strategy-card, .oportunidades-card { background: var(--paper); border: 1.5px solid var(--stone); border-radius: 16px; padding: 22px; }
+  .card-section-label { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #ccc; margin-bottom: 14px; }
+  .insight-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--mist); }
+  .insight-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .insight-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
+  .insight-dot.critico { background: var(--ember); box-shadow: 0 0 0 3px rgba(232,70,26,0.15); }
+  .insight-dot.importante { background: var(--gold); }
+  .insight-dot.informativo { background: var(--sage); }
+  .insight-title { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+  .insight-desc { font-size: 12px; color: #777; line-height: 1.5; font-weight: 300; }
+  .strategy-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--mist); }
+  .strategy-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .strategy-num { width: 24px; height: 24px; border-radius: 50%; background: var(--ember); color: white; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .strategy-body { flex: 1; }
+  .strategy-action { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .strategy-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .plazo-badge { font-size: 10px; background: var(--mist); border: 1px solid var(--stone); border-radius: 100px; padding: 2px 9px; color: #777; font-weight: 500; }
+  .strategy-impact-txt { font-size: 11px; color: #aaa; }
+  .oportunidad-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--mist); }
+  .oportunidad-item:last-child { border-bottom: none; }
+  .oportunidad-tag { font-size: 10px; font-weight: 700; font-family: 'Syne', sans-serif; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 100px; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
+  .oportunidad-tag.alto { background: rgba(201,168,76,0.18); color: #8a6c1e; }
+  .oportunidad-tag.medio { background: rgba(45,74,62,0.12); color: var(--sage); }
+  .oportunidad-tag.bajo  { background: rgba(0,0,0,0.06); color: #888; }
+  .oportunidad-titulo { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+  .oportunidad-desc { font-size: 12px; color: #666; line-height: 1.5; font-weight: 300; }
+  .risks-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .risk-card { background: var(--paper); border-left: 4px solid var(--stone); border-radius: 0 12px 12px 0; padding: 16px 20px; }
+  .risk-card.alta { border-left-color: var(--ember); }
+  .risk-card.media { border-left-color: var(--gold); }
+  .risk-card.baja { border-left-color: var(--sage); }
+  .risk-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .risk-prob { font-size: 11px; font-weight: 700; font-family: 'Syne', sans-serif; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .risk-card.alta .risk-prob { color: var(--ember); }
+  .risk-card.media .risk-prob { color: #a07c30; }
+  .risk-card.baja .risk-prob { color: var(--sage); }
+  .risk-mit { font-size: 13px; color: #666; line-height: 1.5; font-weight: 300; }
+  .export-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .btn-export { display: inline-flex; align-items: center; gap: 6px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; padding: 8px 16px; border-radius: 100px; border: 1.5px solid var(--stone); background: var(--paper); color: #555; cursor: pointer; transition: all 0.15s; }
+  .btn-export:hover { border-color: var(--ink); color: var(--ink); background: var(--mist); }
+  .btn-export.excel:hover { border-color: #1e7e47; color: #1e7e47; background: rgba(30,126,71,0.06); }
+  /* ===== CENTRADO TOTAL: TITULO + GRAFICO ===== */
+
 </style>
 </head>
 <body>
@@ -213,6 +329,7 @@
     <div class="nav-links">
       <a href="#como-funciona">Cómo funciona</a>
       <a href="#demo">Demo en vivo</a>
+      <a href="#csv-dashboard">Analizar CSV</a>
       <a href="#precios">Precios</a>
     </div>
     <a href="#demo" class="btn-nav">Probar ahora →</a>
@@ -282,7 +399,7 @@
 
 <section class="demo-section" id="demo">
   <div class="demo-header">
-    <div class="demo-tag"><div class="live-dot"></div><span>Demo en vivo · Gemini IA</span></div>
+    <div class="demo-tag"><div class="live-dot"></div><span>Demo en vivo · OpenAI IA</span></div>
     <h2 class="demo-title">Pruébalo ahora mismo.<br/><span style="color:var(--ember)">Sin registro.</span></h2>
     <p class="demo-sub">Escribe el nombre de tu empresa, elige un framework estratégico y observa a la IA generativa en acción — análisis real, generado en tiempo real.</p>
   </div>
@@ -342,13 +459,83 @@
   </div>
 </section>
 
+<!-- CSV DASHBOARD SECTION -->
+<section class="csv-section" id="csv-dashboard"> 
+  <p class="section-label">Análisis de datos</p> 
+  <h2 class="section-title">Sube tu CSV.<br/>La IA genera tu <span style="color:var(--ember)">dashboard estratégico.</span></h2> 
+  <p style="margin-top:16px;font-size:15px;color:#666;max-width:520px;line-height:1.6;font-weight:300;margin-bottom:40px;">Ventas, cobranzas, inventario, campañas — cualquier dataset. En segundos recibes KPIs, gráficos y recomendaciones de nivel consultor.</p> 
+  
+  <div id="csv-upload-area"> 
+    <div class="drop-zone" id="drop-zone"> 
+      <input type="file" id="csv-file-input" accept=".csv,.xlsx,.xls,text/csv" /> 
+      <div class="drop-icon">📊</div> 
+      <div class="drop-title">Arrastra tu archivo aquí</div> 
+      <div class="drop-sub">o haz clic para seleccionar</div> 
+      <button class="btn-upload" type="button">Seleccionar archivo</button> 
+      <div class="drop-hint">Máx. 8 MB · Formatos: CSV · Excel (.xlsx)</div> 
+    </div> 
+    <div class="file-selected-bar" id="file-bar"> 
+      <div class="file-icon">📄</div> 
+      <div class="file-info"> 
+        <div class="file-name" id="file-name-label">archivo.csv</div> 
+        <div class="file-size" id="file-size-label">—</div> 
+      </div> 
+      <input class="context-input" id="csv-context" placeholder="Contexto opcional: ej. 'ventas mensuales 2024, empresa retail Lima'" style="max-width:340px;" /> 
+      <button class="btn-analyze" id="btn-analyze" onclick="analyzeCSV()">Analizar con IA →</button> 
+    </div> 
+  </div> 
+  
+  <div class="analysis-loading" id="analysis-loading"> 
+    <div class="loader-ring"></div> 
+    <div class="loader-steps"> 
+      <div class="loader-step" id="ls-1">Parseando dataset...</div> 
+      <div class="loader-step" id="ls-2">Calculando estadísticas...</div> 
+      <div class="loader-step" id="ls-3">IA analizando patrones estratégicos...</div> 
+      <div class="loader-step" id="ls-4">Generando dashboard...</div> 
+    </div> 
+  </div>
+
+  <div class="dashboard-output" id="dashboard-output">
+    <div class="dash-header">
+      <div>
+        <div class="dash-title" id="dash-title">Dashboard Estratégico</div>
+        <div class="dash-badge">Análisis IA</div>
+      </div>
+      <div class="export-row">
+        <button class="btn-export" onclick="exportCSV()">CSV</button>
+        <button class="btn-export excel" onclick="exportExcel()">Excel</button>
+        <button class="btn-reset" onclick="resetDashboard()">+ Nuevo</button>
+      </div>
+    </div>
+
+    <div class="exec-summary">
+      <div class="exec-label">Resumen Ejecutivo</div>
+      <div class="exec-text" id="exec-text">—</div>
+    </div>
+
+    <div class="kpi-grid" id="kpi-grid"></div>
+
+    <div class="charts-section">
+      <div id="charts-grid"></div>
+    </div>
+
+    <div class="bottom-grid">
+      <div class="insight-card"><div class="card-section-label">Insights</div><div id="insights-list"></div></div>
+      <div class="oportunidades-card"><div class="card-section-label">Oportunidades</div><div id="oportunidades-list"></div></div>
+      <div class="strategy-card"><div class="card-section-label">Plan Estratégico</div><div id="strategy-list"></div></div>
+    </div>
+
+    <div class="risks-row" id="risks-row"></div>
+  </div>
+</section>
+
 <section class="personas-section">
   <p class="section-label">Para quién es</p>
   <h2 class="section-title">Estrategia para cada rol.</h2>
   <div class="personas-grid">
     <div class="persona-card"><div class="persona-avatar" style="background:#fde8e2;">🚀</div><h3>Carlos Mendoza</h3><div class="persona-role">Fundador de startup · Lima</div><div class="persona-quote">"En 3 minutos tuve el análisis FODA que mi inversor me pedía. Antes me tomaba días."</div><div class="persona-tags"><span class="tag-pill">FODA</span><span class="tag-pill">Pitch deck</span><span class="tag-pill">Series A</span></div></div>
     <div class="persona-card"><div class="persona-avatar" style="background:#e8f4ea;">📈</div><h3>Ana Torres</h3><div class="persona-role">Gerente de estrategia · PYME</div><div class="persona-quote">"Los OKRs que generó la IA eran más precisos que los que armamos en nuestro retiro de 2 días."</div><div class="persona-tags"><span class="tag-pill">OKRs</span><span class="tag-pill">Planeación anual</span><span class="tag-pill">Equipo directivo</span></div></div>
-    <div class="persona-card"><div class="persona-avatar" style="background:#eef2ff;">🎓</div><h3>Grupo G5</h3><div class="persona-role">Consultores · Universidad</div><div class="persona-quote">"Usamos StrategyAI para demostrar en vivo cómo la IA transforma la consultoría empresarial."</div><div class="persona-tags"><span class="tag-pill">Gemini API</span><span class="tag-pill">Demo en vivo</span><span class="tag-pill">Presentación</span></div></div>
+    <div class="persona-card"><div class="persona-avatar" style="background:#eef2ff;">🎓</div><h3>Grupo G5</h3><div class="persona-role">Consultores · Universidad</div><div class="persona-quote">"Usamos StrategyAI para demostrar en vivo cómo la IA transforma la consultoría empresarial."</div><div class="persona-tags"><span class="tag-pill">API</span><span class="tag-pill">Demo en vivo</span><span class="tag-pill">Presentación</span></div></div>
   </div>
 </section>
 
@@ -357,8 +544,8 @@
   <h2 class="section-title">Precio justo para cada etapa.</h2>
   <div class="pricing-grid">
     <div class="price-card"><div class="price-plan">Básico</div><div class="price-amount">$0</div><div class="price-period">Gratis para siempre</div><div class="price-desc">Para explorar y aprender. Ideal para estudiantes y emprendedores.</div><ul class="price-features"><li class="price-feature"><span class="check">✦</span>5 análisis por mes</li><li class="price-feature"><span class="check">✦</span>FODA y Porter</li><li class="price-feature"><span class="check">✦</span>Exportar como texto</li></ul><a href="#demo" class="btn-price outline">Empezar gratis</a></div>
-    <div class="price-card featured"><div class="featured-badge">Popular</div><div class="price-plan">Pro</div><div class="price-amount">$49</div><div class="price-period">por mes / empresa</div><div class="price-desc">Para PYMEs y equipos que toman decisiones estratégicas frecuentes.</div><ul class="price-features"><li class="price-feature"><span class="check">✦</span>Análisis ilimitados</li><li class="price-feature"><span class="check">✦</span>Todos los frameworks</li><li class="price-feature"><span class="check">✦</span>Exportar PDF y PPT</li><li class="price-feature"><span class="check">✦</span>Historial de análisis</li></ul><a href="#demo" class="btn-price solid">Iniciar prueba gratuita</a></div>
-    <div class="price-card"><div class="price-plan">Enterprise</div><div class="price-amount">$199</div><div class="price-period">por mes / organización</div><div class="price-desc">Para corporaciones con múltiples unidades de negocio y equipos.</div><ul class="price-features"><li class="price-feature"><span class="check">✦</span>Todo lo de Pro</li><li class="price-feature"><span class="check">✦</span>Múltiples usuarios</li><li class="price-feature"><span class="check">✦</span>Integración API</li><li class="price-feature"><span class="check">✦</span>Soporte prioritario</li></ul><a href="#demo" class="btn-price outline">Contactar ventas</a></div>
+    <div class="price-card featured"><div class="featured-badge">Popular</div><div class="price-plan">Pro</div><div class="price-amount">$5</div><div class="price-period">por mes / empresa</div><div class="price-desc">Para PYMEs y equipos que toman decisiones estratégicas frecuentes.</div><ul class="price-features"><li class="price-feature"><span class="check">✦</span>Análisis ilimitados</li><li class="price-feature"><span class="check">✦</span>Todos los frameworks</li><li class="price-feature"><span class="check">✦</span>Exportar PDF y PPT</li><li class="price-feature"><span class="check">✦</span>Historial de análisis</li></ul><a href="#demo" class="btn-price solid">Iniciar prueba gratuita</a></div>
+    <div class="price-card"><div class="price-plan">Enterprise</div><div class="price-amount">$15</div><div class="price-period">por mes / organización</div><div class="price-desc">Para corporaciones con múltiples unidades de negocio y equipos.</div><ul class="price-features"><li class="price-feature"><span class="check">✦</span>Todo lo de Pro</li><li class="price-feature"><span class="check">✦</span>Múltiples usuarios</li><li class="price-feature"><span class="check">✦</span>Integración API</li><li class="price-feature"><span class="check">✦</span>Soporte prioritario</li></ul><a href="#demo" class="btn-price outline">Contactar ventas</a></div>
   </div>
 </section>
 
@@ -375,43 +562,35 @@
 </footer>
 
 <script>
+  // ---------- CHAT DEMO ----------
   let currentFW = 'foda';
   let isLoading = false;
-
-
-  const fwLabels = {
-    foda: 'FODA', porter: '5 Fuerzas de Porter', okr: 'OKRs Estratégicos',
-    bmc: 'Business Model Canvas', pestel: 'PESTEL'
-  };
+  const fwLabels = { foda: 'FODA', porter: '5 Fuerzas de Porter', okr: 'OKRs Estratégicos', bmc: 'Business Model Canvas', pestel: 'PESTEL' };
 
   function setFW(btn, fw) {
-    document.querySelectorAll('.fw-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.fw-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentFW = fw;
   }
 
-  function clearEmpty() {
-    var e = document.getElementById('d-empty');
-    if (e) e.remove();
-  }
-
+  function clearEmpty() { let e = document.getElementById('d-empty'); if(e) e.remove(); }
   function appendMsg(role, text) {
     clearEmpty();
-    var chat = document.getElementById('d-chat');
-    var wrap = document.createElement('div');
+    let chat = document.getElementById('d-chat');
+    let wrap = document.createElement('div');
     wrap.className = 'chat-msg ' + role;
-    var av = document.createElement('div');
+    let av = document.createElement('div');
     av.className = 'chat-av ' + (role === 'user' ? 'usr-av' : 'ai-av');
     av.textContent = role === 'user' ? 'Tú' : 'G5';
-    var bub = document.createElement('div');
+    let bub = document.createElement('div');
     bub.className = 'chat-bubble ' + (role === 'user' ? 'usr-bub' : 'ai-bub');
     if (role === 'assistant') {
-      var lbl = document.createElement('div');
+      let lbl = document.createElement('div');
       lbl.className = 'bub-label';
       lbl.textContent = 'OpenAI · ' + fwLabels[currentFW];
       bub.appendChild(lbl);
     }
-    var txt = document.createElement('div');
+    let txt = document.createElement('div');
     txt.className = 'bub-text';
     txt.textContent = text;
     bub.appendChild(txt);
@@ -424,19 +603,19 @@
 
   function appendTyping() {
     clearEmpty();
-    var chat = document.getElementById('d-chat');
-    var wrap = document.createElement('div');
+    let chat = document.getElementById('d-chat');
+    let wrap = document.createElement('div');
     wrap.className = 'chat-msg assistant';
     wrap.id = 'typing-el';
-    var av = document.createElement('div');
+    let av = document.createElement('div');
     av.className = 'chat-av ai-av';
     av.textContent = 'G5';
-    var bub = document.createElement('div');
+    let bub = document.createElement('div');
     bub.className = 'chat-bubble ai-bub';
-    var lbl = document.createElement('div');
+    let lbl = document.createElement('div');
     lbl.className = 'bub-label';
-    lbl.textContent = 'Gemini · ' + fwLabels[currentFW];
-    var dots = document.createElement('div');
+    lbl.textContent = 'OpenAI · ' + fwLabels[currentFW];
+    let dots = document.createElement('div');
     dots.className = 'typing-ind';
     dots.innerHTML = '<span></span><span></span><span></span>';
     bub.appendChild(lbl);
@@ -448,79 +627,336 @@
     return wrap;
   }
 
+  function demoKey(e) { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensaje(); } }
+  function demoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
+  function useChip(text) { document.getElementById('d-input').value = text; enviarMensaje(); }
 
-
-  function demoKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensaje(); }
-  }
-
-  function demoResize(el) {
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
-  }
-
-  function useChip(text) {
-    document.getElementById('d-input').value = text;
-    enviarMensaje();
-  }
-
-  var demos = {
+  const demos = {
     fintech: { company: 'PagoYa', sector: 'Finanzas', size: 'Startup', msg: 'Somos una fintech que facilita pagos digitales a comercios informales en Lima. Tenemos 8 meses operando y 1,200 comercios activos. ¿Cuáles son nuestras principales oportunidades y amenazas?' },
     agencia: { company: 'CreativosPE', sector: 'Consultoría', size: 'PYME', msg: 'Somos una agencia de marketing digital con 5 años en el mercado, especializada en redes sociales para marcas de consumo masivo. Queremos escalar. Dame las 3 estrategias de diferenciación más importantes.' },
     ecomm: { company: 'NaturaBox', sector: 'Retail', size: 'PYME', msg: 'E-commerce de productos naturales y orgánicos con delivery en Lima, 2 años operando. Quiero expandirme a provincias. ¿Cómo debo planear esta expansión estratégicamente?' }
   };
-
   function runDemo(key) {
-    var d = demos[key];
+    let d = demos[key];
     document.getElementById('d-company').value = d.company;
     document.getElementById('d-sector').value = d.sector;
     document.getElementById('d-size').value = d.size;
     document.getElementById('d-input').value = d.msg;
     enviarMensaje();
   }
-</script>
-<script>
-async function enviarMensaje() {
-  if (isLoading) return;
-  var inp = document.getElementById('d-input');
-  var company = document.getElementById('d-company').value || 'empresa';
-  var sector = document.getElementById('d-sector').value;
-  var size = document.getElementById('d-size').value;
-  var text = inp.value.trim();
-  if (!text) return;
 
-  inp.value = '';
-  inp.style.height = 'auto';
-  isLoading = true;
-  document.getElementById('d-send').disabled = true;
-
-  appendMsg('user', text);
-  var typingEl = appendTyping();
-
-  try {
-    const res = await fetch("/api", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        mensaje: text,
-        empresa: company,
-        framework: fwLabels[currentFW]
-      })
-    });
-    const data = await res.json();
-    typingEl.remove();
-    appendMsg('assistant', data.respuesta);
-  } catch (err) {
-    typingEl.remove();
-    appendMsg('assistant', 'Error de conexión: ' + err.message);
+  async function enviarMensaje() {
+    if(isLoading) return;
+    let inp = document.getElementById('d-input');
+    let company = document.getElementById('d-company').value || 'empresa';
+    let sector = document.getElementById('d-sector').value;
+    let size = document.getElementById('d-size').value;
+    let text = inp.value.trim();
+    if(!text) return;
+    inp.value = '';
+    inp.style.height = 'auto';
+    isLoading = true;
+    document.getElementById('d-send').disabled = true;
+    appendMsg('user', text);
+    let typingEl = appendTyping();
+    try {
+      const res = await fetch("/api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensaje: text, empresa: company, framework: fwLabels[currentFW] })
+      });
+      const data = await res.json();
+      typingEl.remove();
+      appendMsg('assistant', data.respuesta || 'Error en la respuesta');
+    } catch(err) {
+      typingEl.remove();
+      appendMsg('assistant', 'Error de conexión: ' + err.message);
+    }
+    isLoading = false;
+    document.getElementById('d-send').disabled = false;
+    document.getElementById('d-chat').scrollTop = 99999;
   }
 
-  isLoading = false;
-  document.getElementById('d-send').disabled = false;
-  document.getElementById('d-chat').scrollTop = 99999;
-}
+  // ---------- CSV DASHBOARD (CORREGIDO) ----------
+  let csvFile = null;
+  let lastAnalysis = null;
+  let chartInstances = {};
+
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('csv-file-input');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if(f) handleFile(f);
+  });
+  fileInput.addEventListener('change', () => { if(fileInput.files[0]) handleFile(fileInput.files[0]); });
+  document.querySelector('.btn-upload').addEventListener('click', () => fileInput.click());
+
+  function handleFile(f) {
+    const name = f.name.toLowerCase();
+    const ok = name.endsWith('.csv') || name.endsWith('.xlsx') || name.endsWith('.xls');
+    if(!ok) { alert('Sube un archivo .csv o .xlsx'); return; }
+    csvFile = f;
+    const icon = (name.endsWith('.xlsx') || name.endsWith('.xls')) ? '📗' : '📄';
+    document.getElementById('file-name-label').textContent = icon + ' ' + f.name;
+    document.getElementById('file-size-label').textContent = (f.size / 1024).toFixed(1) + ' KB';
+    document.getElementById('file-bar').classList.add('show');
+    document.getElementById('dash-title').textContent = f.name.replace(/\.(csv|xlsx|xls)$/i, '') + ' — Dashboard';
+  }
+
+  async function analyzeCSV() {
+    if(!csvFile) { alert('Sube un archivo primero'); return; }
+    const form = new FormData();
+    form.append("file", csvFile);
+    const context = document.getElementById('csv-context').value;
+    if(context) form.append("context", context);
+
+    document.getElementById('analysis-loading').classList.add('show');
+    document.getElementById('dashboard-output').classList.remove('show');
+
+    try {
+      // ✅ CORRECCIÓN AQUÍ: usar 'form' (no 'formData')
+      const res = await fetch("/api/analyze-csv", { method: "POST", body: form });
+      const data = await res.json();
+      if(data.error) throw new Error(data.error);
+      lastAnalysis = data;
+      renderDashboard(data);
+      document.getElementById('analysis-loading').classList.remove('show');
+      document.getElementById('dashboard-output').classList.add('show');
+      document.getElementById('dashboard-output').scrollIntoView({ behavior: 'smooth' });
+    } catch(err) {
+      document.getElementById('analysis-loading').classList.remove('show');
+      alert('Error al analizar: ' + err.message);
+    }
+  }
+
+  function renderDashboard(data) {
+    // KPIs
+    const kpiGrid = document.getElementById('kpi-grid');
+    kpiGrid.innerHTML = '';
+    (data.kpis || []).forEach(kpi => {
+      let clase = 'kc-medio';
+      if(kpi.impacto === 'alto') clase = 'kc-alto';
+      else if(kpi.impacto === 'bajo') clase = 'kc-bajo';
+      const div = document.createElement('div');
+      div.className = `kpi-card ${clase}`;
+      div.innerHTML = `
+        <div class="kpi-label">${escHtml(kpi.nombre)}</div>
+        <div class="kpi-value">${escHtml(kpi.valor)}</div>
+        <div class="kpi-growth-row">
+          <span class="kpi-growth-val">${kpi.crecimiento ? escHtml(kpi.crecimiento) : ''}</span>
+          <span class="kpi-growth-lbl">vs periodo anterior</span>
+        </div>
+      `;
+      kpiGrid.appendChild(div);
+    });
+
+    // Resumen ejecutivo
+    document.getElementById('exec-text').innerHTML = escHtml(data.resumen_ejecutivo || 'Sin resumen generado.');
+
+    // Gráficos: destruir instancias previas y renderizar de nuevo
+    const chartsGrid = document.getElementById('charts-grid');
+    chartsGrid.innerHTML = '';
+    Object.values(chartInstances).forEach(c => c.destroy());
+    chartInstances = {};
+    
+    if (data.charts && data.charts.length) {
+      data.charts.forEach((chart, idx) => {
+        if (!chart.labels || !chart.data || chart.labels.length === 0) return;
+        const row = document.createElement('div');
+        row.className = 'charts-row r-1';
+        const card = document.createElement('div');
+        card.className = 'chart-card';
+        const header = document.createElement('div');
+        header.className = 'chart-header';
+        header.innerHTML = `
+          <div class="chart-hd-left">
+            <div class="chart-title">${escHtml(chart.titulo)}</div>
+            <div class="chart-desc">${escHtml(chart.descripcion || '')}</div>
+          </div>
+          <div class="chart-type-badge">${chart.tipo}</div>
+        `;
+        const wrap = document.createElement('div');
+        wrap.className = 'chart-canvas-wrap cc-mid';
+        const canvas = document.createElement('canvas');
+        canvas.id = `chart-${idx}-${Date.now()}`;
+        wrap.appendChild(canvas);
+        card.appendChild(header);
+        card.appendChild(wrap);
+        row.appendChild(card);
+        chartsGrid.appendChild(row);
+        const ctx = canvas.getContext('2d');
+        const isTimeLine = chart.tipo === 'line' && chart.id === 'chart-time';
+        const pred = data.prediccion;
+        const chartLabels = isTimeLine && pred && pred.mes_siguiente_raw
+          ? [...chart.labels, pred.label]
+          : chart.labels;
+        const mainData = isTimeLine && pred && pred.mes_siguiente_raw
+          ? [...chart.data, null]
+          : chart.data;
+        const datasets = [{ label: chart.titulo, data: mainData, borderWidth: 2, tension: 0.4, fill: chart.tipo === 'line' }];
+        if (isTimeLine && pred && pred.mes_siguiente_raw) {
+          const bridgeData = new Array(chart.data.length - 1).fill(null);
+          bridgeData.push(chart.data[chart.data.length - 1]);
+          bridgeData.push(pred.mes_siguiente_raw);
+          datasets.push({
+            label: 'Predicción calculada',
+            data: bridgeData,
+            borderWidth: 2,
+            borderDash: [6, 4],
+            borderColor: '#e8461a',
+            backgroundColor: 'rgba(232,70,26,0.1)',
+            pointBackgroundColor: '#e8461a',
+            pointRadius: (ctx2) => ctx2.dataIndex === bridgeData.length - 1 ? 7 : 0,
+            pointHoverRadius: 9,
+            tension: 0.4,
+            fill: false,
+            spanGaps: true
+          });
+        }
+        chartInstances[canvas.id] = new Chart(ctx, {
+          type: chart.tipo,
+          data: { labels: chartLabels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: (item) => {
+                    if (item.dataset.label === 'Predicción calculada' && item.dataIndex === mainData.length - 1) {
+                      return `📈 Predicción calculada: ${pred.mes_siguiente}`;
+                    }
+                    return `${item.dataset.label}: ${item.formattedValue}`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      });
+    } else {
+      chartsGrid.innerHTML = '<div class="chart-card" style="padding:40px;text-align:center;color:#999;">No se pudieron generar gráficos con los datos proporcionados.</div>';
+    }
+
+    // Insights
+    const insightsDiv = document.getElementById('insights-list');
+    insightsDiv.innerHTML = '';
+    (data.insights || []).forEach(ins => {
+      const div = document.createElement('div');
+      div.className = 'insight-item';
+      div.innerHTML = `
+        <div class="insight-dot ${ins.urgencia || 'informativo'}"></div>
+        <div><div class="insight-title">${escHtml(ins.titulo)}</div><div class="insight-desc">${escHtml(ins.descripcion)}</div></div>
+      `;
+      insightsDiv.appendChild(div);
+    });
+
+    // Oportunidades
+    const opsDiv = document.getElementById('oportunidades-list');
+    opsDiv.innerHTML = '';
+    (data.oportunidades || []).forEach(op => {
+      const div = document.createElement('div');
+      div.className = 'oportunidad-item';
+      div.innerHTML = `
+        <div class="oportunidad-tag ${op.potencial}">${op.potencial}</div>
+        <div><div class="oportunidad-titulo">${escHtml(op.titulo)}</div><div class="oportunidad-desc">${escHtml(op.descripcion)}</div></div>
+      `;
+      opsDiv.appendChild(div);
+    });
+
+    // Estrategias
+    const stratDiv = document.getElementById('strategy-list');
+    stratDiv.innerHTML = '';
+    (data.estrategia || []).sort((a,b) => (a.prioridad||9)-(b.prioridad||9)).forEach((s, i) => {
+      const div = document.createElement('div');
+      div.className = 'strategy-item';
+      div.innerHTML = `
+        <div class="strategy-num">${i+1}</div>
+        <div class="strategy-body">
+          <div class="strategy-action">${escHtml(s.accion)}</div>
+          <div class="strategy-meta">
+            <span class="plazo-badge">${s.plazo}</span>
+            <span class="strategy-impact-txt">${escHtml(s.impacto_esperado)}</span>
+          </div>
+        </div>
+      `;
+      stratDiv.appendChild(div);
+    });
+
+    // Riesgos
+    const risksDiv = document.getElementById('risks-row');
+    risksDiv.innerHTML = '';
+    (data.riesgos || []).forEach(r => {
+      const div = document.createElement('div');
+      div.className = `risk-card ${r.probabilidad}`;
+      div.innerHTML = `
+        <div class="risk-title">${escHtml(r.riesgo)}</div>
+        <div class="risk-prob">${r.probabilidad}</div>
+        <div class="risk-mit">${escHtml(r.mitigacion)}</div>
+      `;
+      risksDiv.appendChild(div);
+    });
+  }
+
+  function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function resetDashboard() {
+    csvFile = null;
+    lastAnalysis = null;
+    document.getElementById('file-bar').classList.remove('show');
+    document.getElementById('dashboard-output').classList.remove('show');
+    document.getElementById('csv-file-input').value = '';
+    document.getElementById('csv-context').value = '';
+    Object.values(chartInstances).forEach(c => c.destroy());
+    chartInstances = {};
+  }
+
+  function exportCSV() {
+    if(!lastAnalysis?.cleanRows?.length) return alert('No hay datos para exportar');
+    const rows = lastAnalysis.cleanRows;
+    const cols = Object.keys(rows[0]);
+    const lines = [cols.map(c => `"${c}"`).join(',')];
+    rows.forEach(r => {
+      lines.push(cols.map(c => { let v = r[c]==null ? '' : r[c]; return typeof v === 'string' ? `"${v.replace(/"/g, '""')}"` : v; }).join(','));
+    });
+    downloadBlob(new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), (csvFile?.name?.replace(/\.(csv|xlsx|xls)$/i, '') || 'datos') + '_limpio.csv');
+  }
+
+  function exportExcel() {
+    if(!lastAnalysis) return alert('Primero analiza un archivo');
+    const d = lastAnalysis;
+    const wb = XLSX.utils.book_new();
+    const baseName = csvFile?.name?.replace(/\.(csv|xlsx|xls)$/i, '') || 'StrategyAI';
+    const kpiSheet = XLSX.utils.json_to_sheet((d.kpis || []).map(k => ({ KPI: k.nombre, Valor: k.valor, Tendencia: k.tendencia, Crecimiento: k.crecimiento || '', Impacto: k.impacto })));
+    XLSX.utils.book_append_sheet(wb, kpiSheet, 'KPIs');
+    if(d.cleanRows?.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(d.cleanRows), 'Data_Limpia');
+    (d.charts || []).forEach(chart => { if(chart.labels?.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(chart.labels.map((l,i) => ({ Categoría: l, Valor: chart.data[i] }))), chart.titulo.slice(0,28).replace(/[:\\/?*[\]]/g, '_')); });
+    const iaRows = [
+      { Tipo: 'Resumen Ejecutivo', Contenido: d.resumen_ejecutivo || '' },
+      ...(d.insights || []).map(i => ({ Tipo: 'Insight', Contenido: i.titulo, Detalle: i.descripcion })),
+      ...(d.oportunidades || []).map(o => ({ Tipo: 'Oportunidad', Contenido: o.titulo, Detalle: o.descripcion })),
+      ...(d.estrategia || []).map(s => ({ Tipo: `Estrategia P${s.prioridad||''}`, Contenido: s.accion, Detalle: `${s.plazo} · ${s.impacto_esperado}` })),
+      ...(d.riesgos || []).map(r => ({ Tipo: `Riesgo ${r.probabilidad}`, Contenido: r.riesgo, Detalle: r.mitigacion }))
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(iaRows), 'Insights_IA');
+    XLSX.writeFile(wb, baseName + '_StrategyAI.xlsx');
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), { href: url, download: filename });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  window.analyzeCSV = analyzeCSV;
+  window.resetDashboard = resetDashboard;
+  window.exportCSV = exportCSV;
+  window.exportExcel = exportExcel;
 </script>
 </body>
 </html>
